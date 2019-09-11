@@ -108,26 +108,26 @@ def depthFirstSearch(problem):
 
 def breadthFirstSearch(problem):
     startState = problem.getStartState()
-    visited = set([startState])
+    visited = set([startState])                                             # Visted set maintains all nodes which are visited
 
-    fringeList = util.Queue()  # Storing direction and coordinates in the queue
-    fringeList.push((startState, []))
-    predecessorDict = {}
+    fringeList = util.Queue()
+    fringeList.push(startState)                                           # Storing new node in queue
+    predecessorDict = {}                                                    #Stores parent and direction from it of a node.
 
     while fringeList:
         state = fringeList.pop()
-        visited.add(state[0])
-        if (problem.isGoalState(state[0])):
+        visited.add(state)                                               #Adding to visited as we pop from fringe list
+        if (problem.isGoalState(state)):
             break
 
-        nextStates = problem.getSuccessors(state[0])
-        for st in nextStates:
-            if (st[0] in visited):
+        nextStates = problem.getSuccessors(state)                        # Getting all successors
+        for successor in nextStates:
+            if (successor[0] in visited):
                 continue
             else:
-               fringeList.push([st[0], st[1]])
-               predecessorDict[st[0]] = (state[0], st[1])
-    return calculatePath(startState, state[0], predecessorDict)
+               fringeList.push(successor[0])
+               predecessorDict[successor[0]] = (state, successor[1])              # Dictionary {Child: Parent, Path from parent}
+    return calculatePath(startState, state, predecessorDict)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
