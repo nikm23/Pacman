@@ -72,39 +72,39 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    """
-    fringeList = util.Stack()
-    expanded = []
+def calculatePath(startState, goalState, predecessorDict):
     path = []
+    currentState = predecessorDict[goalState]
+    while currentState:
+        path.insert(0 ,currentState[1])
+        if not currentState[0] == startState:
+            currentState = predecessorDict[currentState[0]]
+        else:
+            currentState = None
+            continue
+    return path
+
+def depthFirstSearch(problem):
+
+    fringeList = util.Stack()
     startState = problem.getStartState()
+    visited = set([startState])
     fringeList.push((startState, []))
+    predecessorDict = {}
     while fringeList:
         currentNode = fringeList.pop()
+        visited.add(currentNode[0])
         if problem.isGoalState(currentNode[0]):
-            return path
-        if currentNode[0] in expanded:
-            continue
+            break
         successors = problem.getSuccessors(currentNode[0])
         for successor in successors:
-            if successor[0] not in expanded:
+            if successor[0] not in visited:
                 fringeList.push((successor[0], successor[1]))
-        expanded.append(currentNode[0])
-        if not currentNode[0] == problem.getStartState():
-            path.append(currentNode[1])
-    return False
+                predecessorDict[successor[0]] = (currentNode[0], successor[1])
+
+        visited.add(currentNode[0])
+
+    return calculatePath(startState, currentNode[0], predecessorDict)
 
 
 def breadthFirstSearch(problem):
@@ -113,14 +113,11 @@ def breadthFirstSearch(problem):
 
     fringeList = util.Queue()  # Storing direction and coordinates in the queue
     fringeList.push((startState, []))
-
-    path = []
+    predecessorDict = {}
 
     while fringeList:
         state = fringeList.pop()
         visited.add(state[0])
-        if state[1]:
-            path.append(state[1])
         if (problem.isGoalState(state[0])):
             break
 
@@ -130,7 +127,8 @@ def breadthFirstSearch(problem):
                 continue
             else:
                fringeList.push([st[0], st[1]])
-    return path
+               predecessorDict[st[0]] = (state[0], st[1])
+    return calculatePath(startState, state[0], predecessorDict)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
