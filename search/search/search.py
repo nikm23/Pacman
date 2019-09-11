@@ -86,10 +86,15 @@ def calculatePath(startState, goalState, predecessorDict):
 
 def depthFirstSearch(problem):
     fringeList = util.Stack()
+    return searchAlgorithm(problem, fringeList)
+
+def breadthFirstSearch(problem):
+    fringeList = util.Queue()
+    return searchAlgorithm(problem, fringeList)
+
+def searchAlgorithm(problem, fringeList):
     startState = problem.getStartState()
-    # visited stores set of explored nodes; nodes for which all the child nodes are added to fringelist
-    visited = set([startState])
-    fringeList.push(startState)
+    fringeList.push(startState)                                 # Storing new node in queue/stack
     # used to store the previous node from which we have traversed to current node. This is later used to calculate right path
     # Stores data in format currentNode(x,y): (previousNode(x,y), 'direction')
     predecessorDict = {}
@@ -97,37 +102,12 @@ def depthFirstSearch(problem):
         currentNode = fringeList.pop()
         if problem.isGoalState(currentNode):
             return calculatePath(startState, currentNode, predecessorDict)
-        successors = problem.getSuccessors(currentNode)
+        successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor in successors:
             if successor[0] not in problem._visitedlist:
                 fringeList.push(successor[0])
                 predecessorDict[successor[0]] = (currentNode, successor[1])
-        visited.add(currentNode)
     return False
-
-
-def breadthFirstSearch(problem):
-    startState = problem.getStartState()
-    visited = set([startState])                                             # Visted set maintains all nodes which are visited
-
-    fringeList = util.Queue()
-    fringeList.push(startState)                                           # Storing new node in queue
-    predecessorDict = {}                                                    #Stores parent and direction from it of a node.
-
-    while fringeList:
-        state = fringeList.pop()
-        visited.add(state)                                               #Adding to visited as we pop from fringe list
-        if (problem.isGoalState(state)):
-            break
-
-        nextStates = problem.getSuccessors(state)                        # Getting all successors
-        for successor in nextStates:
-            if (successor[0] in visited):
-                continue
-            else:
-               fringeList.push(successor[0])
-               predecessorDict[successor[0]] = (state, successor[1])              # Dictionary {Child: Parent, Path from parent}
-    return calculatePath(startState, state, predecessorDict)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
