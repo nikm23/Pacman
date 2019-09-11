@@ -106,10 +106,31 @@ def depthFirstSearch(problem):
             path.append(currentNode[1])
     return False
 
+
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    startState = problem.getStartState()
+    visited = set([startState])
+
+    fringeList = util.Queue()  # Storing direction and coordinates in the queue
+    fringeList.push((startState, []))
+
+    path = []
+
+    while fringeList:
+        state = fringeList.pop()
+        visited.add(state[0])
+        if state[1]:
+            path.append(state[1])
+        if (problem.isGoalState(state[0])):
+            break
+
+        nextStates = problem.getSuccessors(state[0])
+        for st in nextStates:
+            if (st[0] in visited):
+                continue
+            else:
+               fringeList.push([st[0], st[1]])
+    return path
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
