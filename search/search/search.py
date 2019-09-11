@@ -122,7 +122,7 @@ def uniformCostSearch(problem):
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor in successors:
             if successor[0] not in problem._visitedlist:
-                fringeList.push(successor[0], successor[2])                 # pushing successsor and cost in priority queue
+                fringeList.push(successor[0], successor[2]+currentNode[1])                 # pushing successsor and cost in priority queue
                 predecessorDict[successor[0]] = (currentNode, successor[1])
     return calculatePath(startState, currentNode, predecessorDict)
 
