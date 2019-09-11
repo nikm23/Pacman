@@ -101,18 +101,30 @@ def searchAlgorithm(problem, fringeList):
     while fringeList:
         currentNode = fringeList.pop()
         if problem.isGoalState(currentNode):
-            return calculatePath(startState, currentNode, predecessorDict)
+            break;
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor in successors:
             if successor[0] not in problem._visitedlist:
                 fringeList.push(successor[0])
                 predecessorDict[successor[0]] = (currentNode, successor[1])
-    return False
+    return calculatePath(startState, currentNode, predecessorDict)
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    startState = problem.getStartState()
+    fringeList = util.PriorityQueue()
+    fringeList.push(startState, 0)                                 # Storing new node in priority queue
+    predecessorDict = {}
+    while fringeList:
+        currentNode = fringeList.pop()
+        if problem.isGoalState(currentNode):
+            break;
+        successors = problem.getSuccessors(currentNode)         # Getting all successors
+        for successor in successors:
+            if successor[0] not in problem._visitedlist:
+                fringeList.push(successor[0], successor[2])                 # pushing successsor and cost in priority queue
+                predecessorDict[successor[0]] = (currentNode, successor[1])
+    return calculatePath(startState, currentNode, predecessorDict)
 
 def nullHeuristic(state, problem=None):
     """
