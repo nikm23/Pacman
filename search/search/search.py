@@ -85,26 +85,25 @@ def calculatePath(startState, goalState, predecessorDict):
     return path
 
 def depthFirstSearch(problem):
-
     fringeList = util.Stack()
     startState = problem.getStartState()
+    # visited stores set of explored nodes; nodes for which all the child nodes are added to fringelist
     visited = set([startState])
-    fringeList.push((startState, []))
+    fringeList.push(startState)
+    # used to store the previous node from which we have traversed to current node. This is later used to calculate right path
+    # Stores data in format currentNode(x,y): (previousNode(x,y), 'direction')
     predecessorDict = {}
     while fringeList:
         currentNode = fringeList.pop()
-        visited.add(currentNode[0])
-        if problem.isGoalState(currentNode[0]):
-            break
-        successors = problem.getSuccessors(currentNode[0])
+        if problem.isGoalState(currentNode):
+            return calculatePath(startState, currentNode, predecessorDict)
+        successors = problem.getSuccessors(currentNode)
         for successor in successors:
-            if successor[0] not in visited:
-                fringeList.push((successor[0], successor[1]))
-                predecessorDict[successor[0]] = (currentNode[0], successor[1])
-
-        visited.add(currentNode[0])
-
-    return calculatePath(startState, currentNode[0], predecessorDict)
+            if successor[0] not in problem._visitedlist:
+                fringeList.push(successor[0])
+                predecessorDict[successor[0]] = (currentNode, successor[1])
+        visited.add(currentNode)
+    return False
 
 
 def breadthFirstSearch(problem):
