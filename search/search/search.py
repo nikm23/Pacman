@@ -94,37 +94,39 @@ def breadthFirstSearch(problem):
 
 def searchAlgorithm(problem, fringeList):
     startState = problem.getStartState()
-    fringeList.push(startState)                                 # Storing new node in queue/stack
-    # used to store the previous node from which we have traversed to current node. This is later used to calculate right path
-    # Stores data in format currentNode(x,y): (previousNode(x,y), 'direction')
-    predecessorDict = {}
-    while fringeList:
-        currentNode = fringeList.pop()
+    visited = []
+    fringeList.push((startState, []))                                 # Storing new node in queue/stack
+
+    while not fringeList.isEmpty():
+        currentNode, pathtillnow = fringeList.pop()
+        visited.append(currentNode)
         if problem.isGoalState(currentNode):
-            break;
+            return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
-        for successor in successors:
-            if successor[0] not in problem._visitedlist:
-                fringeList.push(successor[0])
-                predecessorDict[successor[0]] = (currentNode, successor[1])
-    return calculatePath(startState, currentNode, predecessorDict)
+        for successor, path, cost in successors:
+            if successor not in visited:
+                totalpath = pathtillnow + [path]
+                fringeList.push((successor, totalpath))
+
+    #return False
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
-    fringeList.push(startState, 0)                                 # Storing new node in priority queue
-    predecessorDict = {}
+    visited = []
+    fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
     while fringeList:
-        currentNode = fringeList.pop()
+        currentNode, pathtillnow, costtillnow = fringeList.pop()
+        visited.append(currentNode)
         if problem.isGoalState(currentNode):
-            break;
+            return pathtillnow;
         successors = problem.getSuccessors(currentNode)         # Getting all successors
-        for successor in successors:
-            if successor[0] not in problem._visitedlist:
-                fringeList.push(successor[0], successor[2]+currentNode[1])                 # pushing successsor and cost in priority queue
-                predecessorDict[successor[0]] = (currentNode, successor[1])
-    return calculatePath(startState, currentNode, predecessorDict)
+        for successor, path, cost in successors:
+            if successor not in visited:
+                totalpath = pathtillnow + [path]
+                fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow)                 # pushing successsor and cost in priority queue
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -134,9 +136,20 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    startState = problem.getStartState()
+    fringeList = util.PriorityQueue()
+    visited = []
+    fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
+    while fringeList:
+        currentNode, pathtillnow, costtillnow = fringeList.pop()
+        visited.append(currentNode)
+        if problem.isGoalState(currentNode):
+            return pathtillnow;
+        successors = problem.getSuccessors(currentNode)         # Getting all successors
+        for successor, path, cost in successors:
+            if successor not in visited:
+                totalpath = pathtillnow + [path]
+                fringeList.push((successor, totalpath, cost + costtillnow + heuristic(successor, problem)), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
 
 
 # Abbreviations
