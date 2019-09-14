@@ -138,6 +138,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
+<<<<<<< HEAD
     visited = []
     fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
     while fringeList:
@@ -150,6 +151,20 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             if successor not in visited:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow + heuristic(successor, problem)), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
+=======
+    fringeList.push(startState, 0)                                 # Storing new node in priority queue
+    predecessorDict = {}
+    while fringeList:
+        currentNode = fringeList.pop()
+        if problem.isGoalState(currentNode):
+            break
+        successors = problem.getSuccessors(currentNode)         # Getting all successors
+        for successor in successors:
+            if successor[0] not in problem._visitedlist:
+                fringeList.push(successor[0], currentNode[1] + successor[2] + heuristic(successor[0], problem, {}))                 # pushing successsor and cost in priority queue
+                predecessorDict[successor[0]] = (currentNode, successor[1])
+    return calculatePath(startState, currentNode, predecessorDict)
+>>>>>>> 29b15b150045e3daae5c5e3305833551a77ae022
 
 
 # Abbreviations
