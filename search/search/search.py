@@ -149,7 +149,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         for successor, path, cost in successors:
             if successor not in visited:
                 totalpath = pathtillnow + [path]
-                fringeList.push((successor, totalpath, cost + costtillnow + heuristic(successor, problem)), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
+                fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
 
 
 # Abbreviations
