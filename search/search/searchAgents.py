@@ -403,6 +403,7 @@ class FoodSearchProblem:
         self.walls = startingGameState.getWalls()
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
+        self._visited, self._visitedlist = {}, []# DO NOT CHANGE; Number of search nodes expanded
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
 
     def getStartState(self):
@@ -423,6 +424,9 @@ class FoodSearchProblem:
                 nextFood = state[1].copy()
                 nextFood[nextx][nexty] = False
                 successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
+        if state not in self._visited:
+            self._visited[state] = True
+            self._visitedlist.append(state)
         return successors
 
     def getCostOfActions(self, actions):
