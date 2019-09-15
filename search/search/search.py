@@ -72,18 +72,6 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def calculatePath(startState, goalState, predecessorDict):
-    path = []
-    currentState = predecessorDict[goalState]
-    while currentState:
-        path.insert(0 ,currentState[1])
-        if not currentState[0] == startState:
-            currentState = predecessorDict[currentState[0]]
-        else:
-            currentState = None
-            continue
-    return path
-
 def depthFirstSearch(problem):
     fringeList = util.Stack()
     return searchAlgorithm(problem, fringeList)
@@ -94,36 +82,45 @@ def breadthFirstSearch(problem):
 
 def searchAlgorithm(problem, fringeList):
     startState = problem.getStartState()
-    visited = []
-    fringeList.push((startState, []))                                 # Storing new node in queue/stack
+    fringeList.push((startState, []))                              # Storing new node in queue/stack
 
     while not fringeList.isEmpty():
         currentNode, pathtillnow = fringeList.pop()
-        visited.append(currentNode)
+        if nodeInGoals(problem, currentNode):
+            fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in visited:
+            if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath))
+    return False
 
-    #return False
+def nodeInGoals(problem, currentState):
+    if hasattr(problem, 'unvcorners') and currentState in problem.unvcorners:
+        # unvisited = state[1][:]
+        problem.unvcorners.remove(currentState)
+        problem._visited.clear()
+        problem._visitedlist[:] = []
+        return True
+    else:
+        return False
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
-    visited = []
-    fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
+    fringeList.push((startState, [], 0), 0)                                 # Storing new node in priority queue
     while fringeList:
         currentNode, pathtillnow, costtillnow = fringeList.pop()
-        visited.append(currentNode)
+        if nodeInGoals(problem, currentNode):
+            fringeList.clear()
         if problem.isGoalState(currentNode):
-            return pathtillnow;
+            return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in visited:
+            if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow)                 # pushing successsor and cost in priority queue
 
@@ -138,16 +135,16 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
-    visited = []
     fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
     while fringeList:
         currentNode, pathtillnow, costtillnow = fringeList.pop()
-        visited.append(currentNode)
+        if nodeInGoals(problem, currentNode):
+            fringeList.clear()
         if problem.isGoalState(currentNode):
-            return pathtillnow;
+            return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in visited:
+            if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
 
