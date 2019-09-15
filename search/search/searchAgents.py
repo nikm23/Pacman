@@ -473,7 +473,30 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    pacmanPositionX, pacmanPositionY = position
+    foodCoordinates = foodGrid.asList()
+    totalfood = len(foodCoordinates)
+    tempDist = []
+    if foodCoordinates == []:
+        return 0;
+    for positionX, positionY in foodCoordinates:
+        tempDist.append(abs(positionX - pacmanPositionX) + abs(positionY - pacmanPositionY))
+    foodSequence = [foodCoordinates[tempDist.index(min(tempDist))]]
+    foodCoordinates.remove(foodCoordinates[tempDist.index(min(tempDist))])
+    totalDistance = min(tempDist)
+    for food in foodSequence:
+        distances = []
+        for positionX, positionY in foodCoordinates:
+            distances.append(abs(positionX - food[0]) + abs(positionY - food[1]))
+        if distances == []:
+            break;
+        mindist = min(distances)
+        foodSequence.append(foodCoordinates[distances.index(mindist)])
+        foodCoordinates.remove(foodCoordinates[distances.index(mindist)])
+        totalDistance = totalDistance + mindist
+
+
+    return totalDistance
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
