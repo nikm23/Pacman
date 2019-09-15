@@ -306,8 +306,7 @@ class CornersProblem(search.SearchProblem):
         isGoal = self.unvcorners == []
 
         # For display purposes only
-        """if isGoal:
-            self._visitedlist.append(state[1])"""
+
 
         return isGoal
 
@@ -374,12 +373,12 @@ def cornersHeuristic(state, problem):
     x, y = state
     distancelist = []
 
-    for var in range(len(problem.unvcorners)):
+    for var in range(len(problem.unvcorners)):                      #Checking manhattan distance from all corners to that of agent
         cx, cy = problem.unvcorners[var]
         distancelist.append(abs(x - cx) + abs(y - cy))
 
     if len(distancelist):
-        return min(distancelist)
+        return min(distancelist)                                   #distance to nearest corner is returned.
     else:
         return 0
 
@@ -477,29 +476,36 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+
+
+    """This heuristic checks the manhattan distance the agent will take to cover all food points. 
+    First Agent searches the nearest food with manhattan distance(d1). Then from that point, it checks the new food
+    nearest to it using manhattan distance(d2). This goes on till the agent covers all food particles.
+    Total distance (tn)= d1+d2+d3.....dn. Heuristic returns tn."""
+
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
     pacmanPositionX, pacmanPositionY = position
     foodCoordinates = foodGrid.asList()
     totalfood = len(foodCoordinates)
     tempDist = []
-    if foodCoordinates == []:
-        return 0;
+    if foodCoordinates == []:                                                         #This is te end case when no food is left
+        return 0;                                                                     #So, the cost is 0.
     for positionX, positionY in foodCoordinates:
         tempDist.append(abs(positionX - pacmanPositionX) + abs(positionY - pacmanPositionY))
-    foodSequence = [foodCoordinates[tempDist.index(min(tempDist))]]
-    foodCoordinates.remove(foodCoordinates[tempDist.index(min(tempDist))])
-    totalDistance = min(tempDist)
+    foodSequence = [foodCoordinates[tempDist.index(min(tempDist))]]                   #Stores sequence of food to follow
+    foodCoordinates.remove(foodCoordinates[tempDist.index(min(tempDist))])            #Food visited is removed from original
+    totalDistance = min(tempDist)                                                     #Total distance is initialized with distance to nearest food
     for food in foodSequence:
         distances = []
         for positionX, positionY in foodCoordinates:
-            distances.append(abs(positionX - food[0]) + abs(positionY - food[1]))
+            distances.append(abs(positionX - food[0]) + abs(positionY - food[1]))       #Calculating manhattan distance
         if distances == []:
             break;
         mindist = min(distances)
-        foodSequence.append(foodCoordinates[distances.index(mindist)])
+        foodSequence.append(foodCoordinates[distances.index(mindist)])                  #Appending the food nearest to current position.
         foodCoordinates.remove(foodCoordinates[distances.index(mindist)])
-        totalDistance = totalDistance + mindist
+        totalDistance = totalDistance + mindist                                       #distance to nearest food item is added to total distance.
 
 
     return totalDistance

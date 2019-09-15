@@ -80,6 +80,7 @@ def breadthFirstSearch(problem):
     fringeList = util.Queue()
     return searchAlgorithm(problem, fringeList)
 
+#This is the common code for bfs and dfs as there is only difference of datastructure to be used.
 def searchAlgorithm(problem, fringeList):
     startState = problem.getStartState()
     fringeList.push((startState, []))                              # Storing new node in queue/stack
@@ -94,7 +95,7 @@ def searchAlgorithm(problem, fringeList):
         for successor, path, cost in successors:
             if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
-                fringeList.push((successor, totalpath))
+                fringeList.push((successor, totalpath))          #Storing path to that node in data structure.
     return False
 
 def nodeInGoals(problem, currentState):
@@ -122,8 +123,8 @@ def uniformCostSearch(problem):
         for successor, path, cost in successors:
             if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
-                fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow)                 # pushing successsor and cost in priority queue
-
+                fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow)         # pushing successsor and cost in priority queue
+                                                                                                        #Storing cost till that node and path in priority queue.
 
 def nullHeuristic(state, problem=None):
     """
@@ -147,7 +148,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             if successor not in problem._visitedlist:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
-
+                # Storing cost till that node and path in priority queue.
 
 # Abbreviations
 bfs = breadthFirstSearch
