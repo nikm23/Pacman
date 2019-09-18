@@ -90,8 +90,6 @@ def searchAlgorithm(problem, fringeList):
         currentNode, pathtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode, visited):
-            fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
@@ -101,15 +99,6 @@ def searchAlgorithm(problem, fringeList):
                 fringeList.push((successor, totalpath))          #Storing path to that node in data structure.
         visited.append(currentNode)
     return False
-
-def nodeInGoals(problem, currentState, visited):
-    if hasattr(problem, 'unvcorners') and currentState in problem.unvcorners:
-        # unvisited = state[1][:]
-        problem.unvcorners.remove(currentState)
-        visited[:] = []
-        return True
-    else:
-        return False
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -121,8 +110,6 @@ def uniformCostSearch(problem):
         currentNode, pathtillnow, costtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode, visited):
-            fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
@@ -148,8 +135,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         currentNode, pathtillnow, costtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode, visited):
-            fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors

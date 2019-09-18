@@ -33,6 +33,7 @@ description for details.
 
 Good luck and happy searching!
 """
+import copy
 
 from game import Directions
 from game import Agent
@@ -272,6 +273,10 @@ class CornersProblem(search.SearchProblem):
 
     You must select a suitable state space and successor function
     """
+    class CornersProblemState():
+        def __init__(self, position, unvisitedCorners):
+            self.unvcorners = unvisitedCorners
+            self.position = position
 
     def __init__(self, startingGameState, costFn = lambda x: 1):
         """
@@ -282,7 +287,6 @@ class CornersProblem(search.SearchProblem):
         self.costFn = costFn
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = [(1,1), (1,top), (right, 1), (right, top)]
-        self.unvcorners = self.corners
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 print 'Warning: no food in corner ' + str(corner)
@@ -297,17 +301,14 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return self.startingPosition
+        return (self.startingPosition, self.corners)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        isGoal = self.unvcorners == []
-
+        isGoal = state[1] == []
         # For display purposes only
-
-
         return isGoal
 
 
@@ -326,21 +327,22 @@ class CornersProblem(search.SearchProblem):
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            x,y = state
+            x,y = state[0]
+            unvisitedCornersInState = state[1]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
 
             if not hitsWall:
                 nextState = (nextx, nexty)
+                successorState = copy.deepcopy(state)
+                if nextState in unvisitedCornersInState:
+                    successorState[1].remove(nextState)
                 cost = self.costFn(nextState)
-                successors.append((nextState, action, cost))
+                successors.append(((nextState, successorState[1]), action, cost))
 
             # Bookkeeping for display purposes
         self._expanded += 1  # DO NOT CHANGE
-        if state not in self._visited:
-            self._visited[state] = True
-            self._visitedlist.append(state)
         return successors
 
     def getCostOfActions(self, actions):
@@ -370,15 +372,15 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    x, y = state
+    x, y = state[0]
     distancelist = []
 
-    for var in range(len(problem.unvcorners)):                      #Checking manhattan distance from all corners to that of agent
-        cx, cy = problem.unvcorners[var]
+    for var in range(len(state[1])):                      #Checking manhattan distance from all corners to that of agent
+        cx, cy = state[1][var]
         distancelist.append(abs(x - cx) + abs(y - cy))
 
     if len(distancelist):
-        return min(distancelist)                                   #distance to nearest corner is returned.
+        return max(distancelist)                                   #distance to farthest corner is returned.
     else:
         return 0
 
