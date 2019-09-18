@@ -90,7 +90,7 @@ def searchAlgorithm(problem, fringeList):
         currentNode, pathtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode):
+        if nodeInGoals(problem, currentNode, visited):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
@@ -102,12 +102,11 @@ def searchAlgorithm(problem, fringeList):
         visited.append(currentNode)
     return False
 
-def nodeInGoals(problem, currentState):
+def nodeInGoals(problem, currentState, visited):
     if hasattr(problem, 'unvcorners') and currentState in problem.unvcorners:
         # unvisited = state[1][:]
         problem.unvcorners.remove(currentState)
-        problem._visited.clear()
-        problem._visitedlist[:] = []
+        visited[:] = []
         return True
     else:
         return False
@@ -122,7 +121,7 @@ def uniformCostSearch(problem):
         currentNode, pathtillnow, costtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode):
+        if nodeInGoals(problem, currentNode, visited):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
@@ -149,7 +148,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         currentNode, pathtillnow, costtillnow = fringeList.pop()
         if currentNode in visited:
             continue
-        if nodeInGoals(problem, currentNode):
+        if nodeInGoals(problem, currentNode, visited):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
