@@ -84,18 +84,22 @@ def breadthFirstSearch(problem):
 def searchAlgorithm(problem, fringeList):
     startState = problem.getStartState()
     fringeList.push((startState, []))                              # Storing new node in queue/stack
+    visited = []
 
     while not fringeList.isEmpty():
         currentNode, pathtillnow = fringeList.pop()
+        if currentNode in visited:
+            continue
         if nodeInGoals(problem, currentNode):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in problem._visitedlist:
+            if successor not in visited:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath))          #Storing path to that node in data structure.
+        visited.append(currentNode)
     return False
 
 def nodeInGoals(problem, currentState):
@@ -113,18 +117,21 @@ def uniformCostSearch(problem):
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
     fringeList.push((startState, [], 0), 0)                                 # Storing new node in priority queue
+    visited = []
     while fringeList:
         currentNode, pathtillnow, costtillnow = fringeList.pop()
+        if currentNode in visited:
+            continue
         if nodeInGoals(problem, currentNode):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in problem._visitedlist:
+            if successor not in visited:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow)         # pushing successsor and cost in priority queue
-                                                                                                        #Storing cost till that node and path in priority queue.
+        visited.append(currentNode)                                                                                                #Storing cost till that node and path in priority queue.
 
 def nullHeuristic(state, problem=None):
     """
@@ -137,18 +144,22 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     startState = problem.getStartState()
     fringeList = util.PriorityQueue()
     fringeList.push((startState,[],0), 0)                                 # Storing new node in priority queue
+    visited = []
     while fringeList:
         currentNode, pathtillnow, costtillnow = fringeList.pop()
+        if currentNode in visited:
+            continue
         if nodeInGoals(problem, currentNode):
             fringeList.clear()
         if problem.isGoalState(currentNode):
             return pathtillnow
         successors = problem.getSuccessors(currentNode)         # Getting all successors
         for successor, path, cost in successors:
-            if successor not in problem._visitedlist:
+            if successor not in visited:
                 totalpath = pathtillnow + [path]
                 fringeList.push((successor, totalpath, cost + costtillnow), cost + costtillnow + heuristic(successor, problem))                 # pushing successsor and cost in priority queue
                 # Storing cost till that node and path in priority queue.
+        visited.append(currentNode)
 
 # Abbreviations
 bfs = breadthFirstSearch
