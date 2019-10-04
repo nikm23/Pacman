@@ -18,6 +18,9 @@ import random, util
 
 from game import Agent
 
+STOPPENALTY = -1.0
+BONUS = 1.0
+
 class ReflexAgent(Agent):
     """
       A reflex agent chooses an action at each choice point by examining
@@ -74,7 +77,33 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        ghostDistances = [manhattanDistance(newPos, ghostPosition.configuration.pos) for ghostPosition in
+                          newGhostStates]
+        closestGhost = min(ghostDistances)
+        minFoodDistance = 0.0
+        #for food in newFood.asList():
+        #    foodDistance = foodDistance + manhattanDistance(food, newPos)
+        foodDistances = []
+        score = 0
+        for foodDistance in newFood.asList():
+            foodDistances.append(manhattanDistance(newPos, foodDistance))
+            if len(newFood.asList()) < len(currentGameState.getFood().asList()):
+                score = BONUS
+        if closestGhost <= 1:
+            score = -99999.0                      # and min([newScaredTimes]) <= TOLERANCE:
+        elif action == "Stop":
+            score = STOPPENALTY
+        else:
+            if len(foodDistances) > 0:
+                minFoodDistance = min(foodDistances)
+                score = score + 1.0/minFoodDistance
+            else:
+                score = score + 9999.0
+
+        return float(score)
+
+
+
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -111,6 +140,40 @@ class MinimaxAgent(MultiAgentSearchAgent):
       Your minimax agent (question 2)
     """
 
+    def minimax(self, curDepth, targetDepth, agentIndex, numagents, gameState):
+
+        if gameState.isWin() or gameState.isLose() or (curDepth == targetDepth):
+            return self.evaluationFunction(gameState)
+
+        if (agentIndex == 0):
+            scores = []
+            legalActions = gameState.getLegalActions()
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(self.minimax(curDepth, targetDepth, agentIndex+1, numagents, successorGameState))
+            bestScore = max(scores)
+            return bestScore
+
+        elif(agentIndex < numagents-1):
+            scores = []
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(
+                    self.minimax(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState))
+            worstScore = min(scores)
+            return worstScore
+
+        elif (agentIndex == numagents - 1):
+            scores = []
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(
+                    self.minimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))
+            worstScore = min(scores)
+            return worstScore
+
     def getAction(self, gameState):
         """
           Returns the minimax action from the current gameState using self.depth
@@ -129,24 +192,131 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns the total number of agents in the game
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numagents = gameState.getNumAgents()
+        agentIndex = 0
+        scores = []
+        legalActions = gameState.getLegalActions()
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(0, action)
+            scores.append(self.minimax(0, self.depth, agentIndex + 1, numagents, successorGameState))
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
+        return legalActions[chosenIndex]
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
+    MAX, MIN = 1000, -1000
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
+    def alphaBeta(self, curDepth, targetDepth, agentIndex, numagents, gameState, alpha, beta):
+
+        if gameState.isWin() or gameState.isLose() or (curDepth == targetDepth):
+            return self.evaluationFunction(gameState)
+
+        if (agentIndex == 0):
+            best = self.MIN
+            legalActions = gameState.getLegalActions()
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                score = self.alphaBeta(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState, alpha, beta)
+                best = max(best, score)
+                alpha = max(alpha, best)
+                if beta < alpha:
+                    break
+            return best
+
+        elif(agentIndex < numagents-1):
+            best = self.MAX
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                score = self.alphaBeta(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState, alpha, beta)
+                best = min(best, score)
+                beta = min(beta, best)
+                # Alpha Beta Pruning
+                if beta < alpha:
+                    break
+            return best
+
+        elif (agentIndex == numagents - 1):
+            best = self.MAX
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                score = self.alphaBeta(curDepth + 1, targetDepth, 0, numagents, successorGameState, alpha, beta)
+                best = min(best, score)
+                beta = min(beta, best)
+                # Alpha Beta Pruning
+                if beta < alpha:
+                    break
+            return best
 
     def getAction(self, gameState):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numagents = gameState.getNumAgents()
+        agentIndex = 0
+        scores = []
+        alpha = self.MIN
+        beta = self.MAX
+        legalActions = gameState.getLegalActions()
+        for action in legalActions:
+            best = self.MIN
+            successorGameState = gameState.generateSuccessor(0, action)
+            score = self.alphaBeta(0, self.depth, agentIndex + 1, numagents, successorGameState, alpha, beta)
+            scores.append(score)
+            best = max(best, score)
+            alpha = max(alpha, best)
+            if beta <= alpha:
+                break
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
+        return legalActions[chosenIndex]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
     """
+
+    def expectimax(self, curDepth, targetDepth, agentIndex, numagents, gameState):
+
+        if gameState.isWin() or gameState.isLose() or (curDepth == targetDepth):
+            return self.evaluationFunction(gameState)
+
+        if (agentIndex == 0):
+            scores = []
+            legalActions = gameState.getLegalActions()
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(self.expectimax(curDepth, targetDepth, agentIndex+1, numagents, successorGameState))
+            bestScore = max(scores)
+            return bestScore
+
+        elif(agentIndex < numagents-1):
+            scores = []
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(
+                    self.expectimax(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState))
+            probScore = 1.0*sum(scores)/len(scores)
+            return probScore
+
+        elif (agentIndex == numagents - 1):
+            scores = []
+            legalActions = gameState.getLegalActions(agentIndex)
+            for action in legalActions:
+                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                scores.append(
+                    self.expectimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))
+            probScore = 1.0*sum(scores)/len(scores)
+            return probScore
+
+
 
     def getAction(self, gameState):
         """
@@ -156,7 +326,17 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numagents = gameState.getNumAgents()
+        agentIndex = 0
+        scores = []
+        legalActions = gameState.getLegalActions()
+        for action in legalActions:
+            successorGameState = gameState.generateSuccessor(0, action)
+            scores.append(self.expectimax(0, self.depth, agentIndex + 1, numagents, successorGameState))
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
+        return legalActions[chosenIndex]
 
 def betterEvaluationFunction(currentGameState):
     """
