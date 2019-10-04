@@ -80,25 +80,23 @@ class ReflexAgent(Agent):
         ghostDistances = [manhattanDistance(newPos, ghostPosition.configuration.pos) for ghostPosition in
                           newGhostStates]
         closestGhost = min(ghostDistances)
-        minFoodDistance = 0.0
-        #for food in newFood.asList():
-        #    foodDistance = foodDistance + manhattanDistance(food, newPos)
         foodDistances = []
         score = 0
         for foodDistance in newFood.asList():
             foodDistances.append(manhattanDistance(newPos, foodDistance))
             if len(newFood.asList()) < len(currentGameState.getFood().asList()):
-                score = BONUS
+                score = BONUS                                     # when net action leads to consumption of food,
+                                                                    # we give bonus score to that move.
         if closestGhost <= 1:
-            score = -99999.0                      # and min([newScaredTimes]) <= TOLERANCE:
-        elif action == "Stop":
+            score = -99999.0
+        elif action == "Stop":                                    # Whenever pacman stops, we give stop penalty
             score = STOPPENALTY
         else:
             if len(foodDistances) > 0:
-                minFoodDistance = min(foodDistances)
-                score = score + 1.0/minFoodDistance
+                minFoodDistance = min(foodDistances)              # getting minimum food distance and
+                score = score + 1.0/minFoodDistance               # taking reciprocal of it to give it highest score
             else:
-                score = score + 9999.0
+                score = score + 9999.0                            # this case is when we consume last food and wins the game
 
         return float(score)
 
@@ -142,35 +140,37 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def minimax(self, curDepth, targetDepth, agentIndex, numagents, gameState):
 
-        if gameState.isWin() or gameState.isLose() or (curDepth == targetDepth):
+        if gameState.isWin() or gameState.isLose() or (curDepth == targetDepth):         #checking if game is won or lost or reached final depth
             return self.evaluationFunction(gameState)
 
-        if (agentIndex == 0):
+        if (agentIndex == 0):                                                    #this is the max node
             scores = []
-            legalActions = gameState.getLegalActions()
+            legalActions = gameState.getLegalActions()                           #for every legal action we have a branch
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
                 scores.append(self.minimax(curDepth, targetDepth, agentIndex+1, numagents, successorGameState))
-            bestScore = max(scores)
+            bestScore = max(scores)                                              # for max taking maximum score
             return bestScore
 
-        elif(agentIndex < numagents-1):
+        elif(agentIndex < numagents-1):                                         # these min are for all ghost agents except last
             scores = []
             legalActions = gameState.getLegalActions(agentIndex)
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
                 scores.append(
-                    self.minimax(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState))
+                    self.minimax(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState))     #Since ghost try to kill pacman,
+                                                                                                            #he will try to minimize score
             worstScore = min(scores)
             return worstScore
 
-        elif (agentIndex == numagents - 1):
+        elif (agentIndex == numagents - 1):                                                   #this is for last ghost agent
             scores = []
             legalActions = gameState.getLegalActions(agentIndex)
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
                 scores.append(
-                    self.minimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))
+                    self.minimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))      #now next agent is of pacman,
+                                                                                                    # thus 0 is passed and depth increased
             worstScore = min(scores)
             return worstScore
 
@@ -196,16 +196,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
         agentIndex = 0
         scores = []
         legalActions = gameState.getLegalActions()
-        for action in legalActions:
+        for action in legalActions:                                                            #Pacman needs to choose action which is best
             successorGameState = gameState.generateSuccessor(0, action)
             scores.append(self.minimax(0, self.depth, agentIndex + 1, numagents, successorGameState))
         bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]   #Picks the best score
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-        return legalActions[chosenIndex]
+        return legalActions[chosenIndex]          #Picks action related to best score
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
-    MAX, MIN = 1000, -1000
+    MAX, MIN = 10000, -10000
     """
       Your minimax agent with alpha-beta pruning (question 3)
     """
@@ -218,20 +218,20 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             best = self.MIN
             legalActions = gameState.getLegalActions()
             for action in legalActions:
-                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                successorGameState = gameState.generateSuccessor(agentIndex, action)             #Getting game state after pacman's legal actions
                 score = self.alphaBeta(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState, alpha, beta)
-                best = max(best, score)
+                best = max(best, score)                     #getting the best score for max node
                 alpha = max(alpha, best)
                 if beta < alpha:
-                    break
+                    break                                   #this is the pruning step
             return best
 
-        elif(agentIndex < numagents-1):
+        elif(agentIndex < numagents-1):            #For all ghost agents except the last
             best = self.MAX
             legalActions = gameState.getLegalActions(agentIndex)
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
-                score = self.alphaBeta(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState, alpha, beta)
+                score = self.alphaBeta(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState, alpha, beta) #Agent increased by one for next ghost
                 best = min(best, score)
                 beta = min(beta, best)
                 # Alpha Beta Pruning
@@ -239,12 +239,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     break
             return best
 
-        elif (agentIndex == numagents - 1):
+        elif (agentIndex == numagents - 1):                  #Last ghost agent
             best = self.MAX
             legalActions = gameState.getLegalActions(agentIndex)
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
                 score = self.alphaBeta(curDepth + 1, targetDepth, 0, numagents, successorGameState, alpha, beta)
+                                                        #Passing 0 as agent Index as next is max node and increasing depth by 1
                 best = min(best, score)
                 beta = min(beta, best)
                 # Alpha Beta Pruning
@@ -263,7 +264,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = self.MIN
         beta = self.MAX
         legalActions = gameState.getLegalActions()
-        for action in legalActions:
+        for action in legalActions:                            #Getting the all legal actions for pacman
             best = self.MIN
             successorGameState = gameState.generateSuccessor(0, action)
             score = self.alphaBeta(0, self.depth, agentIndex + 1, numagents, successorGameState, alpha, beta)
@@ -272,10 +273,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             alpha = max(alpha, best)
             if beta <= alpha:
                 break
-        bestScore = max(scores)
+        bestScore = max(scores)                           #Getting the best score
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-        return legalActions[chosenIndex]
+        return legalActions[chosenIndex]          #returning the best action
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -291,28 +292,28 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             scores = []
             legalActions = gameState.getLegalActions()
             for action in legalActions:
-                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                successorGameState = gameState.generateSuccessor(agentIndex, action)           #Getting all game state after pacman's legal action
                 scores.append(self.expectimax(curDepth, targetDepth, agentIndex+1, numagents, successorGameState))
-            bestScore = max(scores)
+            bestScore = max(scores)                                   #As pacman always try to maximize the score, it will choose max score.
             return bestScore
 
-        elif(agentIndex < numagents-1):
+        elif(agentIndex < numagents-1):                                   # done for all ghost agents except the last one
             scores = []
             legalActions = gameState.getLegalActions(agentIndex)
             for action in legalActions:
                 successorGameState = gameState.generateSuccessor(agentIndex, action)
                 scores.append(
                     self.expectimax(curDepth, targetDepth, agentIndex + 1, numagents, successorGameState))
-            probScore = 1.0*sum(scores)/len(scores)
+            probScore = 1.0*sum(scores)/len(scores)                                      #As ghost may not choose optimal path, we pick avg score
             return probScore
 
-        elif (agentIndex == numagents - 1):
+        elif (agentIndex == numagents - 1):                  #Done for last ghost agent
             scores = []
-            legalActions = gameState.getLegalActions(agentIndex)
+            legalActions = gameState.getLegalActions(agentIndex)                            #Getting all legal actions
             for action in legalActions:
-                successorGameState = gameState.generateSuccessor(agentIndex, action)
+                successorGameState = gameState.generateSuccessor(agentIndex, action)        #Getting game states for all legal actions
                 scores.append(
-                    self.expectimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))
+                    self.expectimax(curDepth + 1, targetDepth, 0, numagents, successorGameState))    #As next will be pacman, agentIndex is passed as 1
             probScore = 1.0*sum(scores)/len(scores)
             return probScore
 
@@ -333,10 +334,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         for action in legalActions:
             successorGameState = gameState.generateSuccessor(0, action)
             scores.append(self.expectimax(0, self.depth, agentIndex + 1, numagents, successorGameState))
-        bestScore = max(scores)
+        bestScore = max(scores)                                                   #Getting max score of the all legal actions
         bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
-        return legalActions[chosenIndex]
+        return legalActions[chosenIndex]           #Picking the best legal action
 
 def betterEvaluationFunction(currentGameState):
     """
